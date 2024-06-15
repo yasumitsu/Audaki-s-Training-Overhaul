@@ -203,15 +203,6 @@ if not StatGainingPrerequisites.HarvestedJunk then
     op:PostLoad()
 end
 
----@class StatGainingPrerequisite
----Represents a prerequisite for gaining a stat in the game.
----@field Comment string The comment describing the prerequisite.
----@field group string The group the stat belongs to.
----@field id string The unique identifier for the prerequisite.
----@field msg_reactions table<string, MsgReaction> The message reactions that trigger the prerequisite.
----@field parameters table<string, PresetParamNumber> The parameters for the prerequisite.
----@field relatedStat string The stat related to the prerequisite.
----@field PostLoad fun() A function that is called after the prerequisite is loaded.
 if not StatGainingPrerequisites.ScroungeOperation then
     local op = PlaceObj('StatGainingPrerequisite',
         {Comment="Gain strenght gathering junk", group="Strength", id="ScroungeOperation",
@@ -272,13 +263,6 @@ if not StatGainingPrerequisites.ScroungeOperation then
     op:PostLoad()
 end
 
----@class StatGainingPrerequisite
----Represents a prerequisite for gaining a stat in the game.
----@field Comment string The comment describing the prerequisite.
----@field group string The group the stat belongs to.
----@field id string The unique identifier for the prerequisite.
----@field msg_reactions table<string, MsgReaction> The message reactions that trigger the prerequisite.
----@field relatedStat string The stat related to this prerequisite.
 ---Unlocks the "Mechanical" stat when a mercenary unlocks a door using a lockpick.
 if not StatGainingPrerequisites.DoorLockPicked then
     local op = PlaceObj('StatGainingPrerequisite',
@@ -303,12 +287,6 @@ if not StatGainingPrerequisites.DoorLockPicked then
 end
 
 ---Represents a prerequisite for gaining the "Strength" stat when a mercenary unlocks a door using a crowbar.
----@class StatGainingPrerequisite
----@field Comment string The comment describing the prerequisite.
----@field group string The group the stat belongs to.
----@field id string The unique identifier for the prerequisite.
----@field msg_reactions table<string, MsgReaction> The message reactions that trigger the prerequisite.
----@field relatedStat string The stat related to this prerequisite.
 if not StatGainingPrerequisites.DoorLockBroken then
     local op = PlaceObj('StatGainingPrerequisite',
         {Comment="Unlocked a Door with Crowbar", group="Strength", id="DoorLockBroken",
