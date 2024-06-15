@@ -158,15 +158,15 @@ return {
 			id = "ScroungeOperationUrbanLoot",
 			PlaceObj('LootEntryLootDef', {
 				loot_def = "IndustrialContainer",
-				weight = 1000000,
+				weight = 100000,
 			}),
 			PlaceObj('LootEntryLootDef', {
 				loot_def = "Container_Explosives_VariedUtility",
-				weight = 1000000,
+				weight = 100000,
 			}),
 			PlaceObj('LootEntryLootDef', {
 				loot_def = "JunkHarvest_Optional",
-				weight = 1000000,
+				weight = 100000,
 			}),
 		}),
 		PlaceObj('ModItemLootDef', {
@@ -175,15 +175,15 @@ return {
 			id = "ScroungeOperationWildernessLoot",
 			PlaceObj('LootEntryLootDef', {
 				loot_def = "EnemyValuables",
-				weight = 600000,
+				weight = 100000,
 			}),
 			PlaceObj('LootEntryLootDef', {
 				loot_def = "Container_MedStimms",
-				weight = 8000000,
+				weight = 100000,
 			}),
 			PlaceObj('LootEntryLootDef', {
 				loot_def = "Container_Explosives_Batch",
-				weight = 200000,
+				weight = 100000,
 			}),
 		}),
 		}),

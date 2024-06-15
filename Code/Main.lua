@@ -309,6 +309,61 @@ if not StatGainingPrerequisites.DoorLockBroken then
     op:PostLoad()
 end
 
+-- PlaceObj('StatGainingPrerequisite', {
+-- 	Comment = "Moved a distance of at least <voxelsToMove> voxels after they were attacked in the previous turn",
+-- 	group = "Strength",
+-- 	id = "Moving",
+-- 	msg_reactions = {
+-- 		PlaceObj('MsgReaction', {
+-- 			Event = "UnitMovementStart",
+-- 			Handler = function (self, unit, target, toDoStance )
+-- 				if g_Combat or not IsMerc(target) then return end
+				
+-- 				local state = GetPrerequisiteState(unit, self.id, unit:GetPos())
+-- 				if not state then
+-- 					state = {UnitsMoved = 0}
+-- 					SetPrerequisiteState(unit, self.id,unit:GetPos() , state)
+-- 				end
+-- 			end,
+-- 		}),
+-- 		PlaceObj('MsgReaction', {
+-- 			Event = "UnitMovementDone",
+-- 			Handler = function (self, unit, action_id, prev_pos)
+-- 				-- track amount of movement if attacked
+-- -- track amount of movement if attacked
+-- if g_Combat or not IsMerc(unit) then return end
+-- print("position", unit:GetPos(), "last", unit:GetDist(last_pos), "pos", unit:GetDist(pos))
+-- local state = GetPrerequisiteState(unit, self.id)
+-- if state and state.UnitsMoved then
+-- 	-- calc movement and add to state
+-- 	state.UnitsMoved = state.UnitsMoved + unit:GetDist(prev_pos)
+-- 	if state.UnitsMoved / const.SlabSizeX >= self:ResolveValue("voxelsToMove") then
+-- 		SetPrerequisiteState(unit, self.id, state, "gain")
+-- 	else
+-- 		SetPrerequisiteState(unit, self.id, state)
+-- 	end
+-- end
+-- -- stop tracking on turn end
+-- --local team = g_Teams[teamEnded]
+-- --if team and team.player_team and team.units then
+-- --	for i, unit in ipairs(team.units) do
+-- 		--SetPrerequisiteState(unit, self.id, false)
+-- --	end
+-- --end
+-- 			end,
+-- 		}),
+
+-- 	},
+-- 	oncePerMapVisit = false,
+-- 	parameters = {
+-- 		PlaceObj('PresetParamNumber', {
+-- 			'Name', "voxelsToMove",
+-- 			'Value', 7,
+-- 			'Tag', "<voxelsToMove>",
+-- 		}),
+-- 	},
+-- 	relatedStat = "Strength",
+-- })
 AudaAto = {isKira=table.find(ModsLoaded, 'id', 'audaTest'), -- 12 hours
 tickLength=12 * 60 * 60, -- sge = Stat Gaining (Points) Extra
 -- sgeGainMod = "Train Boost Gain Modifier"

@@ -5,13 +5,13 @@ return PlaceObj('ModDef', {
 	'external_links', {
 		"https://github.com/yasumitsu/Audaki-s-Training-Overhaul",
 	},
-	'last_changes', "- removed the UI text from merc portrait, I could barely read it",
+	'last_changes', "- tunned down loot for scrounge operation",
 	'dependencies', {},
 	'id', "audaAto",
 	'author', "Audaki_ra",
 	'version_major', 2,
 	'version_minor', 1,
-	'version', 502,
+	'version', 507,
 	'lua_revision', 233360,
 	'saved_with_revision', 350233,
 	'code', {
@@ -22,8 +22,8 @@ return PlaceObj('ModDef', {
 		audaAtoSgeGainMod = "50% (Hard, Default)",
 	},
 	'has_data', true,
-	'saved', 1718424714,
-	'code_hash', 415722606620530497,
+	'saved', 1718458506,
+	'code_hash', 6579023413767554609,
 	'affected_resources', {
 		PlaceObj('ModResourcePreset', {
 			'Class', "SectorOperation",
