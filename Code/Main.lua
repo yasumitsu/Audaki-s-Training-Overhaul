@@ -17,6 +17,67 @@ function audaFindXtByTextId(obj, id)
     end
 end
 
+
+function CompleteCurrentTrainMercs(sector, mercs)
+    NetUpdateHash("CompleteCurrentTrainMercs")
+    --local eventId = g_MilitiaTrainingCompleteCounter
+    --g_MilitiaTrainingCompleteCounter = g_MilitiaTrainingCompleteCounter + 1
+    local start_time = Game.CampaignTime
+    CreateMapRealTimeThread(function()
+        -- Ajustar a lógica aqui para lidar com a operação TrainMercs
+        sector.merc_training = false
+        
+        local students = GetOperationProfessionals(sector.Id, self.id, "Student")
+        local teachers = GetOperationProfessionals(sector.Id, self.id, "Teacher")
+        
+        for _, merc in ipairs(mercs) do
+            if merc.OperationProfession == "Student" then
+                table.insert(students, merc)
+            else
+                teacher = merc
+            end
+        end
+        
+        local popupHost = GetDialog("PDADialogSatellite")
+        popupHost = popupHost and popupHost:ResolveId("idDisplayPopupHost")
+        
+        if not teacher or #students == 0 then
+            -- Sem professor ou estudantes
+            local dlg = CreateMessageBox(
+                popupHost,
+                T(295710973806, "Merc Training"),
+                T{522643975325, "Merc training cannot proceed - no teacher or students found.<newline><GameColorD>(<sectorName>)</GameColorD>",
+                    sectorName = GetSectorName(sector)}
+                )
+                dlg:Wait()
+        else
+            -- treinar novamente
+            local cost, costTexts, names, errors = GetOperationCosts(mercs, "MercTraining", "Trainer", "refund")
+            local buyAgainText = T(460261217340, "Do you want to train mercs again?")
+            local costText = table.concat(costTexts, ", ")    
+            local dlg = CreateQuestionBox(
+                popupHost,
+                T(295710973806, "Merc Training"),
+                T{522643975325, "Merc training is finished - trained <merc_trained> defenders.<newline><GameColorD>(<sectorName>)</GameColorD>",
+                    sectorName = GetSectorName(sector),
+                    merc_trained = #students},
+                T(689884995409, "Yes"),
+                T(782927325160, "No"),
+                { sector = sector, mercs = mercs, textLower = buyAgainText, costText = costText }, 
+                function() return not next(errors) and "enabled" or "disabled" end,
+                nil,
+                "ZuluChoiceDialog_MercTraining")
+            
+            assert(g_MercTrainingCompletePopups[eventId] == nil)
+            g_MercTrainingCompletePopups[eventId] = dlg
+            NetSyncEvent("ProcessMercTrainingPopupResults", dlg:Wait(), eventId, sector.Id, UnitDataToSessionIds(mercs), cost, start_time)
+            g_MercTrainingCompletePopups[eventId] = nil
+        end
+    end)
+end
+
+
+
 ---
 --- Initializes various training actions and settings in the game.
 ---
@@ -309,61 +370,6 @@ if not StatGainingPrerequisites.DoorLockBroken then
     op:PostLoad()
 end
 
--- PlaceObj('StatGainingPrerequisite', {
--- 	Comment = "Moved a distance of at least <voxelsToMove> voxels after they were attacked in the previous turn",
--- 	group = "Strength",
--- 	id = "Moving",
--- 	msg_reactions = {
--- 		PlaceObj('MsgReaction', {
--- 			Event = "UnitMovementStart",
--- 			Handler = function (self, unit, target, toDoStance )
--- 				if g_Combat or not IsMerc(target) then return end
-				
--- 				local state = GetPrerequisiteState(unit, self.id, unit:GetPos())
--- 				if not state then
--- 					state = {UnitsMoved = 0}
--- 					SetPrerequisiteState(unit, self.id,unit:GetPos() , state)
--- 				end
--- 			end,
--- 		}),
--- 		PlaceObj('MsgReaction', {
--- 			Event = "UnitMovementDone",
--- 			Handler = function (self, unit, action_id, prev_pos)
--- 				-- track amount of movement if attacked
--- -- track amount of movement if attacked
--- if g_Combat or not IsMerc(unit) then return end
--- print("position", unit:GetPos(), "last", unit:GetDist(last_pos), "pos", unit:GetDist(pos))
--- local state = GetPrerequisiteState(unit, self.id)
--- if state and state.UnitsMoved then
--- 	-- calc movement and add to state
--- 	state.UnitsMoved = state.UnitsMoved + unit:GetDist(prev_pos)
--- 	if state.UnitsMoved / const.SlabSizeX >= self:ResolveValue("voxelsToMove") then
--- 		SetPrerequisiteState(unit, self.id, state, "gain")
--- 	else
--- 		SetPrerequisiteState(unit, self.id, state)
--- 	end
--- end
--- -- stop tracking on turn end
--- --local team = g_Teams[teamEnded]
--- --if team and team.player_team and team.units then
--- --	for i, unit in ipairs(team.units) do
--- 		--SetPrerequisiteState(unit, self.id, false)
--- --	end
--- --end
--- 			end,
--- 		}),
-
--- 	},
--- 	oncePerMapVisit = false,
--- 	parameters = {
--- 		PlaceObj('PresetParamNumber', {
--- 			'Name', "voxelsToMove",
--- 			'Value', 7,
--- 			'Tag', "<voxelsToMove>",
--- 		}),
--- 	},
--- 	relatedStat = "Strength",
--- })
 AudaAto = {isKira=table.find(ModsLoaded, 'id', 'audaTest'), -- 12 hours
 tickLength=12 * 60 * 60, -- sge = Stat Gaining (Points) Extra
 -- sgeGainMod = "Train Boost Gain Modifier"
@@ -680,94 +686,6 @@ function modifyOperations()
             param.Value = 24
         end
     end
-    g_PresetParamCache[SectorOperations.TrainMercs]['ActivityDurationInHoursFull'] = 24
-
-    SectorOperations.TrainMercs.ProgressPerTick = function(self, merc, prediction)
-        local progressPerTick = self:ResolveValue("PerTickProgress")
-        if CheatEnabled("FastActivity") then
-            progressPerTick = progressPerTick * 100
-        end
-        return progressPerTick
-    end
-
-    SectorOperations.TrainMercs.Tick = function(self, merc)
-        -- Learning speed parameter defines the treshold of how much must be gained to gain 1 in a stat. Bigger number means slower.
-        local sector = merc:GetSector()
-        local stat = sector.training_stat
-        if self:ProgressCurrent(merc, sector) >= self:ProgressCompleteThreshold(merc, sector) then
-            return
-        end
-        if merc.OperationProfession == "Student" then
-            local teachers = GetOperationProfessionals(sector.Id, self.id, "Teacher")
-            local teacher = teachers[1]
-            if not teacher then
-                return
-            end
-        else
-            -- teacher
-            local students = GetOperationProfessionals(sector.Id, self.id, "Student")
-            local t_stat = merc[stat]
-            for _, student in ipairs(students) do
-                local is_learned_max = student[stat] >= t_stat or student[stat] >= AudaAto.sectorTrainingStatCap
-                if not is_learned_max then
-                    student.stat_learning = student.stat_learning or {}
-
-                    local progressPerTick = MulDivRound(t_stat, 100 + merc.Leadership, 100)
-                                                + self:ResolveValue("learning_base_bonus")
-                    if HasPerk(merc, "Teacher") then
-                        local bonusPercent = CharacterEffectDefs.Teacher:ResolveValue("MercTrainingBonus")
-                        progressPerTick = progressPerTick + MulDivRound(progressPerTick, bonusPercent, 100)
-                    end
-
-                    if #students >= 2 then
-                        progressPerTick = MulDivRound(progressPerTick, 100, 100 + 15 * (#students - 1))
-                    end
-
-                    if student.statGainingPoints == 0 then
-                        progressPerTick = MulDivRound(progressPerTick, 100, 1000)
-                    else
-                        progressPerTick = MulDivRound(progressPerTick, 1000, 100)
-                    end
-
-                    -- Ensure minimum progress
-                    progressPerTick = Max(5, progressPerTick)
-
-                    student.stat_learning[stat] = student.stat_learning[stat] or {progress=0, up_levels=0}
-                    local learning_progress = student.stat_learning[stat].progress
-                    learning_progress = learning_progress + progressPerTick
-
-                    local progress_threshold = 250 * student[stat] * (150 - Max(80, (student.Wisdom - 50) * 2)) / 100
-
-                    if student[stat] >= (AudaAto.sectorTrainingStatCap - 20) then
-                        progress_threshold = MulDivRound(progress_threshold, 100 + 5
-                            * (student[stat] - (AudaAto.sectorTrainingStatCap - 21)), 100)
-                    end
-
-                    if learning_progress >= progress_threshold then
-
-                        student.statGainingPoints = Max(0, student.statGainingPoints - 1)
-
-                        local gainAmount = 1
-                        local modId =
-                            string.format("StatTraining-%s-%s-%d", stat, student.session_id, GetPreciseTicks())
-                        GainStat(student, stat, gainAmount, modId, "Training")
-
-                        PlayVoiceResponse(student, "TrainingReceived")
-                        -- CombatLog("important",T{424323552240, "<merc_nickname> gained +1 <stat_name> from training in <sector_id>", stat_name = stat_name, merc_nickname  =  student.Nick, sector_id = Untranslated(sector.Id)})
-                        learning_progress = 0
-                        student.stat_learning[stat].up_levels = student.stat_learning[stat].up_levels + 1
-                    end
-                    student.stat_learning[stat].progress = learning_progress
-                end
-            end
-        end
-        local students = GetOperationProfessionals(sector.Id, self.id, "Student")
-        if not next(students) then
-            --	self:Complete(sector)
-            return
-        end
-    end
-
 end
 
 local hasExtraStatGainProperty = false
@@ -792,22 +710,3 @@ if not hasExtraStatGainProperty then
     UnitProperties.properties[#UnitProperties.properties + 1] =
         {category="XP", id="statGainingPointsExtra", editor="number", default=0}
 end
-
--- local mercRolloverAttrsXt = audaFindXtByTextId(XTemplates.PDAMercRollover, 488971610056)
--- if mercRolloverAttrsXt then
---  mercRolloverAttrsXt.ContextUpdateOnOpen = true
---  mercRolloverAttrsXt.OnContextUpdate = function(self, context, ...)
---    local sgp = context.statGainingPoints or 0
---    local postfix = ''
---    if sgp <= 4 then
---      postfix = '<scale 400><color PDASectorInfo_Yellow><alpha ' .. 90 + (20 * (4 - sgp))
---      postfix = postfix .. '><valign top 8> gain</alpha></color>'
---    end
---    self:SetText(T(488971610056, "ATTRIBUTES") ..
---        T({ ' | <scale 850><style CrosshairAPTotal><sgp> TRAIN BOOST<plural></style><postfix>',
---            sgp = sgp and ('+' .. sgp) or 'NO',
---            plural = sgp == 1 and '' or 'S',
---            postfix = postfix }))
---    return XContextControl.OnContextUpdate(self, context)
---  end
--- end
