@@ -20,11 +20,10 @@ end
 
 function CompleteCurrentTrainMercs(sector, mercs)
     NetUpdateHash("CompleteCurrentTrainMercs")
-    --local eventId = g_MilitiaTrainingCompleteCounter
-    --g_MilitiaTrainingCompleteCounter = g_MilitiaTrainingCompleteCounter + 1
+    local eventId = g_MilitiaTrainingCompleteCounter
+    g_TrainMercsCompleteCounter = g_TrainMercsCompleteCounter + 1
     local start_time = Game.CampaignTime
     CreateMapRealTimeThread(function()
-        -- Ajustar a lógica aqui para lidar com a operação TrainMercs
         sector.merc_training = false
         
         local students = GetOperationProfessionals(sector.Id, self.id, "Student")
@@ -42,7 +41,6 @@ function CompleteCurrentTrainMercs(sector, mercs)
         popupHost = popupHost and popupHost:ResolveId("idDisplayPopupHost")
         
         if not teacher or #students == 0 then
-            -- Sem professor ou estudantes
             local dlg = CreateMessageBox(
                 popupHost,
                 T(295710973806, "Merc Training"),
@@ -51,7 +49,6 @@ function CompleteCurrentTrainMercs(sector, mercs)
                 )
                 dlg:Wait()
         else
-            -- treinar novamente
             local cost, costTexts, names, errors = GetOperationCosts(mercs, "MercTraining", "Trainer", "refund")
             local buyAgainText = T(460261217340, "Do you want to train mercs again?")
             local costText = table.concat(costTexts, ", ")    
@@ -60,13 +57,13 @@ function CompleteCurrentTrainMercs(sector, mercs)
                 T(295710973806, "Merc Training"),
                 T{522643975325, "Merc training is finished - trained <merc_trained> defenders.<newline><GameColorD>(<sectorName>)</GameColorD>",
                     sectorName = GetSectorName(sector),
-                    merc_trained = #students},
+                    students = #students},
                 T(689884995409, "Yes"),
                 T(782927325160, "No"),
                 { sector = sector, mercs = mercs, textLower = buyAgainText, costText = costText }, 
                 function() return not next(errors) and "enabled" or "disabled" end,
                 nil,
-                "ZuluChoiceDialog_MercTraining")
+                "ZuluChoiceDialog_MilitiaTraining")
             
             assert(g_MercTrainingCompletePopups[eventId] == nil)
             g_MercTrainingCompletePopups[eventId] = dlg

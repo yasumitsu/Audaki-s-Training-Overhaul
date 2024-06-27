@@ -273,7 +273,7 @@ return {
 				return true
 			end,
 			OnComplete = function (self, sector, mercs)
-				CompleteCurrentTrainMercs(sector, mercs)
+				--CompleteCurrentTrainMercs(sector, mercs)
 				--student.stat_learning[stat].progress = learning_progress
 			end,
 			OnRemoveOperation = function (self, merc)

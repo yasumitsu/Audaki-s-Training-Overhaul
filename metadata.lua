@@ -11,7 +11,7 @@ return PlaceObj('ModDef', {
 	'author', "Audaki_ra",
 	'version_major', 2,
 	'version_minor', 1,
-	'version', 523,
+	'version', 534,
 	'lua_revision', 233360,
 	'saved_with_revision', 350233,
 	'code', {
@@ -22,8 +22,8 @@ return PlaceObj('ModDef', {
 		audaAtoSgeGainMod = "50% (Hard, Default)",
 	},
 	'has_data', true,
-	'saved', 1719395729,
-	'code_hash', 5000353274954984868,
+	'saved', 1719398127,
+	'code_hash', -4933708431554811970,
 	'affected_resources', {
 		PlaceObj('ModResourcePreset', {
 			'Class', "SectorOperation",
